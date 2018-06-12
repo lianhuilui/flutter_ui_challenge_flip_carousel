@@ -168,6 +168,8 @@ class _CardFlipperState extends State<CardFlipper> with TickerProviderStateMixin
     final radius = 1.0;
     final angle = scrollPercent * pi / 8;
     final horizontalTranslation = 0.0;
+    final screenwidth = MediaQuery.of(context).size.width;
+
     Matrix4 projection = new Matrix4.identity()
       ..setEntry(0, 0, 1 / radius)
       ..setEntry(1, 1, 1 / radius)
@@ -175,15 +177,14 @@ class _CardFlipperState extends State<CardFlipper> with TickerProviderStateMixin
       ..setEntry(2, 3, -radius)
       ..setEntry(3, 3, perspective * radius + 1.0);
 
-    // Model matrix by first translating the object from the origin of the world
-    // by radius in the z axis and then rotating against the world.
-    final rotationPointMultiplier = angle > 0.0 ? angle / angle.abs() : 1.0;
-    print('Angle: $angle');
     projection *= new Matrix4.translationValues(
-            horizontalTranslation + (rotationPointMultiplier * 300.0), 0.0, 0.0) *
-        new Matrix4.rotationY(angle) *
-        new Matrix4.translationValues(0.0, 0.0, radius) *
-        new Matrix4.translationValues(-rotationPointMultiplier * 300.0, 0.0, 0.0);
+      0.0, // X
+      0.0, // Y
+      -(scrollPercent * 200).abs() // Z: create some depth so the cards go away from you as you scroll
+    );
+
+    // rotate it to make a 3D effect
+    projection *= new Matrix4.rotationY(angle);
 
     return projection;
   }
@@ -196,6 +197,7 @@ class _CardFlipperState extends State<CardFlipper> with TickerProviderStateMixin
   ) {
     final cardScrollPercent = scrollPercent / (1 / cardCount);
     final parallax = scrollPercent - (cardIndex / widget.cards.length);
+    final screensize = MediaQuery.of(context).size;
 
     return new FractionalTranslation(
       translation: new Offset(cardIndex - cardScrollPercent, 0.0),
@@ -203,6 +205,8 @@ class _CardFlipperState extends State<CardFlipper> with TickerProviderStateMixin
         padding: const EdgeInsets.all(16.0),
         child: new Transform(
           transform: _buildCardProjection(cardScrollPercent - cardIndex),
+          // *** NOTE: setting the origin of the transform fixes the unwanted asymmetric skewed effect
+          origin: new Offset(screensize.width / 2 - 16.0, screensize.height / 2 - 16.0), // set origin to the middle (minus padding)
           child: new Card(
             viewModel: viewModel,
             parallaxPercent: parallax,

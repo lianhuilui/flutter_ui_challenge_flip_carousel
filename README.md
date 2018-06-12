@@ -1,8 +1,8 @@
-# flip_carousel_proto
 
-A new Flutter project.
+A fork of Matthew Carroll's Flutter Challenge: Card Flip Carousel
 
-## Getting Started
+Youtube Link: https://www.youtube.com/watch?v=sWkysCKh2uY
 
-For help getting started with Flutter, view our online
-[documentation](http://flutter.io/).
+The only changes I made are:
+1) To fix the "perspective problems" mentioned at the end of the video. This was fixed by setting an origin for the tranform.
+2) I added a z value to the transform to make the card move away as they slide.
